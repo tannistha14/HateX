@@ -7,18 +7,17 @@ from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer, WordNetLemmatizer
 import numpy as np
 import os
+import sys
+
+# Check for NLTK data and download if not present
+try:
+    nltk.data.find("corpora/stopwords")
+except nltk.downloader.DownloadError:
+    st.info("Downloading NLTK data...")
+    nltk.download("stopwords")
+    nltk.download("wordnet")
 
 # ====== NLTK data setup ======
-# Download NLTK data to a writable temporary directory
-nltk_data_path = os.path.join("/tmp", "nltk_data")
-if not os.path.exists(nltk_data_path):
-    os.makedirs(nltk_data_path)
-    nltk.download("stopwords", download_dir=nltk_data_path)
-    nltk.download("wordnet", download_dir=nltk_data_path)
-
-# Set the NLTK data path so the script can find the downloaded files
-nltk.data.path.append(nltk_data_path)
-
 stop_words = set(stopwords.words("english"))
 stemmer = PorterStemmer()
 lemmatizer = WordNetLemmatizer()
@@ -48,7 +47,7 @@ def load_resources():
         return model, vectorizer
     except Exception as e:
         st.error(f"Error loading model or vectorizer: {e}")
-        st.info("Please make sure 'hate_speech_nn_model.h5' and 'tfidf_vectorizer.pkl' are in the same directory.")
+        st.info("Please make sure 'hate_speech_nn_model.h5' and 'tfidf_vectorizer.pkl' are in the same directory as app.py.")
         return None, None
 
 model, vectorizer = load_resources()
@@ -61,7 +60,12 @@ def predict(text):
     text_clean = clean_text(text, use_stemming=True, use_lemmatization=False)
     vec = vectorizer.transform([text_clean]).toarray()
     
-    probs = model.predict(vec)[0]
+    # Predict with a try-except block to gracefully handle potential errors
+    try:
+        probs = model.predict(vec)[0]
+    except Exception as e:
+        st.error(f"An error occurred during prediction: {e}")
+        return None
     
     labels = ["Hate Speech", "Offensive", "Neutral"]
     
