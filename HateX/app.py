@@ -6,9 +6,19 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer, WordNetLemmatizer
 import numpy as np
+import os
 
 # ====== NLTK data setup ======
-# NLTK data is now pre-downloaded by the packages.txt file
+# Download NLTK data to a writable temporary directory
+nltk_data_path = os.path.join("/tmp", "nltk_data")
+if not os.path.exists(nltk_data_path):
+    os.makedirs(nltk_data_path)
+    nltk.download("stopwords", download_dir=nltk_data_path)
+    nltk.download("wordnet", download_dir=nltk_data_path)
+
+# Set the NLTK data path so the script can find the downloaded files
+nltk.data.path.append(nltk_data_path)
+
 stop_words = set(stopwords.words("english"))
 stemmer = PorterStemmer()
 lemmatizer = WordNetLemmatizer()
