@@ -9,18 +9,37 @@ import numpy as np
 import os
 import sys
 
-# Check for NLTK data and download if not present
-try:
-    nltk.data.find("corpora/stopwords")
-except nltk.downloader.DownloadError:
-    st.info("Downloading NLTK data...")
-    nltk.download("stopwords")
-    nltk.download("wordnet")
+# Define a function to check and download NLTK data
+def download_nltk_data():
+    # Set a writable directory for NLTK data
+    nltk_data_path = os.path.join(os.path.expanduser("~"), "nltk_data")
+    if not os.path.exists(nltk_data_path):
+        os.makedirs(nltk_data_path)
+    nltk.data.path.append(nltk_data_path)
+
+    # Check for required data and download if not present
+    try:
+        nltk.data.find('corpora/stopwords')
+    except:
+        st.info("Downloading NLTK stopwords...")
+        nltk.download('stopwords', download_dir=nltk_data_path)
+    
+    try:
+        nltk.data.find('corpora/wordnet')
+    except:
+        st.info("Downloading NLTK wordnet...")
+        nltk.download('wordnet', download_dir=nltk_data_path)
+
+# Run the download function before any NLTK corpus is called
+download_nltk_data()
 
 # ====== NLTK data setup ======
 stop_words = set(stopwords.words("english"))
-stemmer = PorterStemmer()
 lemmatizer = WordNetLemmatizer()
+
+# The stemmer is defined here but requires no data download
+stemmer = PorterStemmer()
+
 
 # ====== Text cleaning + NLP preprocessing (from your notebook) ======
 def clean_text(text, use_stemming=True, use_lemmatization=False):
